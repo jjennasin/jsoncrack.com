@@ -34,20 +34,53 @@ const Row = ({ row, x, y, index }: RowProps) => {
   );
 };
 
-const Node = ({ node, x, y }: CustomNodeProps) => (
-  <Styled.StyledForeignObject
-    data-id={`node-${node.id}`}
-    width={node.width}
-    height={node.height}
-    x={0}
-    y={0}
-    $isObject
-  >
-    {node.text.map((row, index) => (
-      <Row key={`${node.id}-${index}`} row={row} x={x} y={y} index={index} />
-    ))}
-  </Styled.StyledForeignObject>
-);
+const Node = ({ node, x, y }: CustomNodeProps) => {
+  // helper to convert path array to accessor string like a.b[0].c
+  const pathToAccessor = (path?: any[]) => {
+    if (!path || path.length === 0) return "";
+    let acc = "";
+    path.forEach((seg, idx) => {
+      if (typeof seg === "number") acc += `[${seg}]`;
+      else acc += idx === 0 ? `${seg}` : `.${seg}`;
+    });
+    return acc;
+  };
+
+  // normalize node rows into a value (object or single value)
+  const normalizeNodeValue = (rows: typeof node.text) => {
+    if (!rows || rows.length === 0) return null;
+    if (rows.length === 1 && !rows[0].key) return rows[0].value;
+    const obj: Record<string, any> = {};
+    rows.forEach(r => {
+      if (r.type !== "array" && r.type !== "object") {
+        if (r.key) obj[r.key] = r.value;
+      }
+    });
+    return obj;
+  };
+
+  const accessor = pathToAccessor((node as any).path as any[]);
+  const value = normalizeNodeValue(node.text);
+
+  return (
+    <Styled.StyledForeignObject
+      data-id={`node-${node.id}`}
+      data-json-path={accessor}
+      data-json-value={JSON.stringify(value)}
+      width={node.width}
+      height={node.height}
+      x={0}
+      y={0}
+      $isObject
+    >
+      <div style={{ width: "100%", height: "100%", position: "relative", pointerEvents: "none" }}>
+        {node.text.map((row, index) => (
+          <Row key={`${node.id}-${index}`} row={row} x={x} y={y} index={index} />
+        ))}
+      </div>
+    </Styled.StyledForeignObject>
+  );
+};
 
 function propsAreEqual(prev: CustomNodeProps, next: CustomNodeProps) {
   return (

@@ -18,6 +18,7 @@ import { Toolbar } from "../features/editor/Toolbar";
 import useGraph from "../features/editor/views/GraphView/stores/useGraph";
 import useConfig from "../store/useConfig";
 import useFile from "../store/useFile";
+import { useJson } from "@/store/useJson"; // <--- add this line
 
 const ModalController = dynamic(() => import("../features/modals/ModalController"));
 const ExternalMode = dynamic(() => import("../features/editor/ExternalMode"));
@@ -79,6 +80,7 @@ const EditorPage = () => {
   const checkEditorSession = useFile(state => state.checkEditorSession);
   const darkmodeEnabled = useConfig(state => state.darkmodeEnabled);
   const fullscreen = useGraph(state => state.fullscreen);
+  const { json } = useJson(); // <--- add this line
 
   useEffect(() => {
     if (isReady) checkEditorSession(query?.json);
@@ -87,6 +89,12 @@ const EditorPage = () => {
   useEffect(() => {
     setColorScheme(darkmodeEnabled ? "dark" : "light");
   }, [darkmodeEnabled, setColorScheme]);
+
+  // Sync json store changes to file store (for left editor and text display)
+  useEffect(() => {
+    const setContents = useFile.getState().setContents;
+    setContents({ contents: json, hasChanges: false, skipUpdate: true });
+  }, [json]);
 
   return (
     <>

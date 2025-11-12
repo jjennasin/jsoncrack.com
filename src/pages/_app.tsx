@@ -12,6 +12,7 @@ import GlobalStyle from "../constants/globalStyle";
 import { SEO } from "../constants/seo";
 import { lightTheme } from "../constants/theme";
 import { smartColorSchemeManager } from "../lib/utils/mantineColorScheme";
+import NodeEditorPortal from "@/components/NodeEditorPortal";
 
 const theme = createTheme({
   autoContrast: true,
@@ -52,7 +53,7 @@ const theme = createTheme({
   },
 });
 
-function JsonCrack({ Component, pageProps }: AppProps) {
+function MyApp({ Component, pageProps }: AppProps) {
   const { pathname } = useRouter();
 
   // Create a single smart manager that handles pathname logic internally
@@ -99,10 +100,12 @@ function JsonCrack({ Component, pageProps }: AppProps) {
           <GlobalStyle />
           {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && <GoogleAnalytics trackPageViews />}
           <Component {...pageProps} />
+          {/* Node editor portal listens for clicks on elements with data-json-path */}
+          <NodeEditorPortal />
         </ThemeProvider>
       </MantineProvider>
     </>
   );
 }
 
-export default JsonCrack;
+export default MyApp;
